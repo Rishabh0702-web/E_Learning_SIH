@@ -5,10 +5,11 @@ import { useAuth } from '../../lib/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export default function Login() {
-  const { user, signInWithGoogle, loading } = useAuth();
+  const { user, signInWithGoogle, signInWithGoogleRedirect, loading } = useAuth();
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [currentQuote, setCurrentQuote] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const educationalQuotes = [
     "Education is the most powerful weapon to change the world.",
@@ -23,6 +24,7 @@ export default function Login() {
     }
   }, [user, router]);
 
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentQuote((prev) => (prev + 1) % educationalQuotes.length);
     }, 4000);
@@ -32,11 +34,24 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     try {
       setIsSigningIn(true);
+      setErrorMessage(null); // Clear any previous errors
       await signInWithGoogle();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign in error:', error);
+      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsSigningIn(false);
+    }
+  };
+
+  const handleGoogleSignInRedirect = async () => {
+    try {
+      setErrorMessage(null);
+      await signInWithGoogleRedirect();
+      // The redirect will happen automatically, no need to handle the result here
+    } catch (error: any) {
+      console.error('Redirect sign in error:', error);
+      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
     }
   };
 
@@ -157,6 +172,45 @@ export default function Login() {
                 </>
               )}
             </button>
+
+            {/* Alternative Sign-in Note */}
+            <div className="mt-3 text-center">
+              <p className="text-xs text-gray-500">
+                Having trouble with popups? 
+                <button
+                  onClick={handleGoogleSignInRedirect}
+                  className="ml-1 text-blue-600 hover:text-blue-800 underline"
+                >
+                  Try redirect sign-in
+                </button>
+              </p>
+            </div>
+
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-red-500">⚠️</span>
+                  <p className="text-red-700 text-sm font-medium">{errorMessage}</p>
+                </div>
+                <div className="flex items-center gap-3 mt-3">
+                  <button
+                    onClick={() => setErrorMessage(null)}
+                    className="text-red-600 hover:text-red-800 text-xs underline"
+                  >
+                    Dismiss
+                  </button>
+                  {(errorMessage.includes('popup') || errorMessage.includes('cancelled')) && (
+                    <button
+                      onClick={handleGoogleSignInRedirect}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors"
+                    >
+                      Try with Redirect
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Features Preview */}
             <div className="mt-8 grid grid-cols-3 gap-4 text-center">
