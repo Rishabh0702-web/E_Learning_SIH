@@ -10,6 +10,7 @@ import ProgressTracking from '../../components/learning/ProgressTracking';
 import AchievementsRewards from '../../components/gamification/AchievementsRewards';
 import Leaderboard from '../../components/gamification/Leaderboard';
 import GamifiedQuiz from '../../components/gamification/GamifiedQuiz';
+import AIAssistant from '../../components/chatbot/AIAssistant';
 
 // Import page components (we'll convert them to components)
 // import TeacherDashboardComponent from './components/TeacherDashboard';
@@ -110,7 +111,7 @@ const categories = {
 };
 
 export default function UnifiedDashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const [currentView, setCurrentView] = useState<DashboardView>('home');
 
   const handleSignOut = async () => {
@@ -120,6 +121,25 @@ export default function UnifiedDashboard() {
       console.error('Sign out error:', error);
     }
   };
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // Redirect to login if user is not authenticated
+  if (!user) {
+    window.location.href = '/login';
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-900 flex items-center justify-center">
+        <div className="text-white text-xl">Redirecting to login...</div>
+      </div>
+    );
+  }
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -350,6 +370,9 @@ export default function UnifiedDashboard() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* AI Assistant Chatbot */}
+      <AIAssistant />
     </div>
   );
 }
