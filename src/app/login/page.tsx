@@ -10,6 +10,8 @@ export default function Login() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [currentQuote, setCurrentQuote] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showRedirectOption, setShowRedirectOption] = useState(false);
+  const [autoFallbackUsed, setAutoFallbackUsed] = useState(false);
 
   const educationalQuotes = [
     "Education is the most powerful weapon to change the world.",
@@ -34,11 +36,37 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     try {
       setIsSigningIn(true);
-      setErrorMessage(null); // Clear any previous errors
+      setErrorMessage(null);
+      setShowRedirectOption(false);
       await signInWithGoogle();
     } catch (error: any) {
       console.error('Sign in error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      
+      // Check if this is a popup-related error
+      const isPopupError = error.message.includes('popup') || 
+                          error.message.includes('cancelled') || 
+                          error.message.includes('blocked') ||
+                          error.message.includes('took too long');
+      
+      if (isPopupError && !autoFallbackUsed) {
+        // Auto-fallback to redirect method
+        setAutoFallbackUsed(true);
+        setErrorMessage('Popup sign-in failed. Trying redirect method...');
+        
+        try {
+          setTimeout(async () => {
+            await handleGoogleSignInRedirect();
+          }, 2000); // Wait 2 seconds before redirect
+          return;
+        } catch (redirectError) {
+          setErrorMessage('Both popup and redirect sign-in failed. Please check your internet connection and try again.');
+        }
+      } else {
+        setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+        if (isPopupError) {
+          setShowRedirectOption(true);
+        }
+      }
     } finally {
       setIsSigningIn(false);
     }
@@ -47,11 +75,13 @@ export default function Login() {
   const handleGoogleSignInRedirect = async () => {
     try {
       setErrorMessage(null);
+      setIsSigningIn(true);
       await signInWithGoogleRedirect();
       // The redirect will happen automatically, no need to handle the result here
     } catch (error: any) {
       console.error('Redirect sign in error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      setErrorMessage(error.message || 'Redirect sign-in failed. Please check your internet connection and try again.');
+      setIsSigningIn(false);
     }
   };
 
@@ -173,13 +203,27 @@ export default function Login() {
               )}
             </button>
 
+            {/* Popup Blocker Tip */}
+            {(showRedirectOption || autoFallbackUsed) && (
+              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <span className="text-yellow-600 text-sm">💡</span>
+                  <div className="text-xs text-yellow-800">
+                    <p className="font-medium">Popup sign-in not working?</p>
+                    <p className="mt-1">Your browser might be blocking popups. Try allowing popups for this site or use the redirect option below.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Alternative Sign-in Note */}
             <div className="mt-3 text-center">
               <p className="text-xs text-gray-500">
                 Having trouble with popups? 
                 <button
                   onClick={handleGoogleSignInRedirect}
-                  className="ml-1 text-blue-600 hover:text-blue-800 underline"
+                  disabled={isSigningIn}
+                  className="ml-1 text-blue-600 hover:text-blue-800 underline disabled:text-blue-400"
                 >
                   Try redirect sign-in
                 </button>
@@ -188,27 +232,61 @@ export default function Login() {
 
             {/* Error Message */}
             {errorMessage && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+              <div className={`mt-4 p-4 border rounded-xl ${
+                errorMessage.includes('Trying redirect') 
+                  ? 'bg-blue-50 border-blue-200' 
+                  : 'bg-red-50 border-red-200'
+              }`}>
                 <div className="flex items-center gap-2">
-                  <span className="text-red-500">⚠️</span>
-                  <p className="text-red-700 text-sm font-medium">{errorMessage}</p>
+                  <span className={errorMessage.includes('Trying redirect') ? 'text-blue-500' : 'text-red-500'}>
+                    {errorMessage.includes('Trying redirect') ? '🔄' : '⚠️'}
+                  </span>
+                  <p className={`text-sm font-medium ${
+                    errorMessage.includes('Trying redirect') 
+                      ? 'text-blue-700' 
+                      : 'text-red-700'
+                  }`}>
+                    {errorMessage}
+                  </p>
                 </div>
-                <div className="flex items-center gap-3 mt-3">
-                  <button
-                    onClick={() => setErrorMessage(null)}
-                    className="text-red-600 hover:text-red-800 text-xs underline"
-                  >
-                    Dismiss
-                  </button>
-                  {(errorMessage.includes('popup') || errorMessage.includes('cancelled')) && (
+                
+                {!errorMessage.includes('Trying redirect') && (
+                  <div className="flex items-center gap-3 mt-3">
                     <button
-                      onClick={handleGoogleSignInRedirect}
-                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors"
+                      onClick={() => {
+                        setErrorMessage(null);
+                        setShowRedirectOption(false);
+                        setAutoFallbackUsed(false);
+                      }}
+                      className="text-red-600 hover:text-red-800 text-xs underline"
                     >
-                      Try with Redirect
+                      Dismiss
                     </button>
-                  )}
-                </div>
+                    {(showRedirectOption || (errorMessage.includes('popup') || errorMessage.includes('cancelled'))) && (
+                      <button
+                        onClick={handleGoogleSignInRedirect}
+                        disabled={isSigningIn}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xs rounded-md transition-colors flex items-center gap-1"
+                      >
+                        {isSigningIn ? (
+                          <>
+                            <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Redirecting...
+                          </>
+                        ) : (
+                          'Try with Redirect'
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )}
+                
+                {errorMessage.includes('Trying redirect') && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+                    <span className="text-blue-600 text-xs">Please wait, redirecting to Google...</span>
+                  </div>
+                )}
               </div>
             )}
 

@@ -9,11 +9,12 @@ import AdaptiveLearningPaths from '../../components/learning/AdaptiveLearningPat
 import ProgressTracking from '../../components/learning/ProgressTracking';
 import AchievementsRewards from '../../components/gamification/AchievementsRewards';
 import Leaderboard from '../../components/gamification/Leaderboard';
+import GamifiedQuiz from '../../components/gamification/GamifiedQuiz';
 
 // Import page components (we'll convert them to components)
-import TeacherDashboardComponent from './components/TeacherDashboard';
-import ParentDashboardComponent from './components/ParentDashboard';
-import OfflineLanguageComponent from './components/OfflineLanguage';
+// import TeacherDashboardComponent from './components/TeacherDashboard';
+// import ParentDashboardComponent from './components/ParentDashboard';
+// import OfflineLanguageComponent from './components/OfflineLanguage';
 
 type DashboardView = 
   | 'home' 
@@ -21,6 +22,7 @@ type DashboardView =
   | 'progress' 
   | 'achievements' 
   | 'leaderboard' 
+  | 'gamified-quiz'
   | 'teacher' 
   | 'parent' 
   | 'offline';
@@ -41,6 +43,14 @@ const dashboardCards: DashboardCard[] = [
     description: 'AI-powered personalized learning paths',
     icon: '🧠',
     color: 'from-blue-500 to-cyan-500',
+    category: 'learning'
+  },
+  {
+    id: 'gamified-quiz',
+    title: 'Gamified Quiz',
+    description: 'Play interactive quizzes and earn points & badges',
+    icon: '🎮',
+    color: 'from-violet-500 to-purple-500',
     category: 'learning'
   },
   {
@@ -121,12 +131,47 @@ export default function UnifiedDashboard() {
         return <AchievementsRewards />;
       case 'leaderboard':
         return <Leaderboard />;
+      case 'gamified-quiz':
+        return <GamifiedQuiz />;
       case 'teacher':
-        return <TeacherDashboardComponent />;
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 p-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+                <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">👩‍🏫 Teacher Dashboard</h1>
+                <div className="text-center text-gray-600">
+                  <p>Teacher tools coming soon!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       case 'parent':
-        return <ParentDashboardComponent />;
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 p-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+                <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">👨‍👩‍👧‍👦 Parent Portal</h1>
+                <div className="text-center text-gray-600">
+                  <p>Parent monitoring tools coming soon!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       case 'offline':
-        return <OfflineLanguageComponent />;
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 p-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+                <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">📱 Offline & Languages</h1>
+                <div className="text-center text-gray-600">
+                  <p>Offline features and multi-language support coming soon!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       default:
         return <DashboardHome />;
     }
@@ -146,6 +191,37 @@ export default function UnifiedDashboard() {
         <p className="text-white/80 text-lg">
           Your complete learning ecosystem awaits. Choose your adventure below!
         </p>
+      </motion.div>
+
+      {/* Quick Setup Notification */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl">
+              🎮
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg">Ready to Play & Learn?</h3>
+              <p className="text-white/70 text-sm">
+                Try our new Gamified Quiz feature! Click below to start learning with fun interactive quizzes.
+              </p>
+            </div>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setCurrentView('gamified-quiz')}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center gap-2"
+          >
+            <span>Start Quiz</span>
+            <span>🚀</span>
+          </motion.button>
+        </div>
       </motion.div>
 
       {/* Quick Stats */}
