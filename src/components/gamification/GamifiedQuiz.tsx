@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../lib/AuthContext';
+import { useProfile } from '../../lib/ProfileContext';
+import PersonalizedQuiz from '../quiz/PersonalizedQuiz';
 import { QuestionSkeleton as QuestionSkeletonLoader } from '../ui/SkeletonLoader';
 
 // Comprehensive question dataset - 15 questions per subject
@@ -554,7 +556,7 @@ const GamifiedQuiz: React.FC = () => {
               </p>
             </motion.div>
           ) : !selectedSubject ? (
-            /* Subject Selection */
+            /* Subject Selection with Personalized Quiz */
             <motion.div
               key="subjects"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -565,6 +567,17 @@ const GamifiedQuiz: React.FC = () => {
               <div className="text-center mb-8">
                 <h1 className="text-4xl font-bold text-white mb-4">🎮 Gamified Quiz Challenge</h1>
                 <p className="text-white/80 text-lg">Choose a subject and test your knowledge with 10 unique questions!</p>
+              </div>
+              
+              {/* Personalized Quiz Component */}
+              <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 mb-8">
+                <PersonalizedQuiz onStartQuiz={(subject, difficulty) => selectSubject(subject.toLowerCase())} />
+              </div>
+              
+              {/* Original Subject Grid */}
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">Or Choose Any Subject</h2>
+                <p className="text-white/70">Browse all available subjects</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
