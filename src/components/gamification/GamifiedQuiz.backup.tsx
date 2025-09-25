@@ -96,7 +96,7 @@ const LoadingProgress = ({ message, isPreloading }: { message: string; isPreload
   </motion.div>
 );
 
-const GamifiedQuiz: React.FC = () => {
+const GamifiedQuiz = () => {
   const { user } = useAuth();
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);

@@ -133,12 +133,17 @@ const ProfileDashboard: React.FC = () => {
   };
 
   const toggleArrayField = (field: keyof StudentProfile, value: string) => {
-    setProfile(prev => ({
-      ...prev,
-      [field]: prev[field]?.includes(value)
-        ? (prev[field] as string[]).filter(item => item !== value)
-        : [...(prev[field] as string[] || []), value]
-    }));
+    setProfile(prev => {
+      const currentValue = prev[field];
+      const currentArray = Array.isArray(currentValue) ? currentValue : [];
+      
+      return {
+        ...prev,
+        [field]: currentArray.includes(value)
+          ? currentArray.filter(item => item !== value)
+          : [...currentArray, value]
+      };
+    });
   };
 
   const nextStep = () => {

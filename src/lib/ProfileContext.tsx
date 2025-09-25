@@ -182,7 +182,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       games.push('Farming Game', 'Interactive Simulations');
     }
     
-    return [...new Set(games)].slice(0, 4); // Remove duplicates and limit to 4
+    return Array.from(new Set(games)).slice(0, 4); // Remove duplicates and limit to 4
   };
 
   const getPersonalizedStudyPlan = (): string[] => {

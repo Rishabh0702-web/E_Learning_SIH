@@ -9,7 +9,7 @@ if (!MONGODB_URI) {
 }
 
 declare global {
-  var mongoose: { conn: null | typeof mongoose; promise: null | Promise<typeof mongoose> };
+  var mongoose: { conn: null | typeof import('mongoose'); promise: null | Promise<typeof import('mongoose')> };
 }
 
 let cached = global.mongoose;
@@ -37,6 +37,7 @@ async function connectDB() {
       })
       .catch((error) => {
         console.error('❌ Error connecting to MongoDB:', error);
+        cached.promise = null;
         throw error;
       });
   }
